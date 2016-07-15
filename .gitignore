@@ -6,3 +6,9 @@ java-mapi-wrapper/.classpath
 java-mapi-wrapper/.project
 java-mapi-wrapper/.settings/
 java-mapi-wrapper/lib/
+
+*.iml
+.idea
+.gradle
+build
+lib

@@ -1,0 +1,3 @@
+rootProject.name = 'java-mapi-wrapper'
+
+include 'java-mapi-wrapper'

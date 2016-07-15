@@ -1,0 +1,48 @@
+plugins {
+    id "de.undercouch.download" version "3.1.0"
+}
+apply plugin: 'java'
+
+project.ext.commonsVersion = "4.1.10"               //keep it in sync with the 'commons-version' defined in build.xml
+
+build {
+    version             = "4.1.11"                  //keep it in sync with the 'release-package-version' defined in build.xml
+    sourceCompatibility = JavaVersion.VERSION_1_6
+    targetCompatibility = JavaVersion.VERSION_1_6
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = [ "src" ]
+        }
+    }
+}
+
+task downloadJavaCommonsZipFile(type: de.undercouch.gradle.tasks.download.Download) {
+    src "http://bcos-release-files.s3.amazonaws.com/java-commons/bc-commons-with-dep-${commonsVersion}.zip"
+    dest new java.io.File(buildDir, "bc-commons-with-dep-${commonsVersion}.zip")
+    onlyIfNewer true
+}
+
+task downloadAndUnzipJavaCommonsFile(type: Copy, dependsOn: downloadJavaCommonsZipFile) {
+    from zipTree(downloadJavaCommonsZipFile.dest)
+    into new java.io.File("${buildDir}")
+}
+
+//create gradle tasks based on ant tasks
+ant.importBuild("build.xml") { antTargetName ->
+    //prefixing in order to avoid name collision
+    'a_' + antTargetName
+}
+
+ant.properties['commons-version'] = "${commonsVersion}"
+ant.properties['commons-lib'] = "${buildDir}/bc-commons-with-dep-${commonsVersion}"
+ant.properties['ext-project-commons-release-dir'] = "${buildDir}"
+
+compileJava.dependsOn = ["downloadAndUnzipJavaCommonsFile"]
+clean.dependsOn = ["a_clean"]
+
+dependencies {
+    compile fileTree(dir: "${buildDir}/bc-commons-with-dep-${commonsVersion}", include: '*.jar')
+}
